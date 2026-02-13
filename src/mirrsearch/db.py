@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 import psycopg2
+from opensearchpy import OpenSearch 
 
 
 @dataclass(frozen=True)
@@ -36,7 +37,7 @@ class DBLayer:
             if q in item["title"].lower() or q in item["docket_id"].lower()
         ]
 
-def get_db() -> DBLayer:
+def get_postgres_connection() -> DBLayer:
     conn = psycopg2.connect(
         host="localhost",
         dbname="your_db",
@@ -44,3 +45,11 @@ def get_db() -> DBLayer:
         password="your_password"
     )
     return DBLayer(conn)
+
+def get_opensearch_connection() -> OpenSearch:
+     client = OpenSearch(
+         hosts=[{"host": "localhost", "port": 9200}],
+         use_ssl=False,
+         verify_certs=False,
+     )
+     return client
