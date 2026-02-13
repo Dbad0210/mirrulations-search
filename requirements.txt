@@ -2,5 +2,5 @@ flask
 pylint 
 pytest
 gunicorn
-
+opensearch-py
 pytest-cov
