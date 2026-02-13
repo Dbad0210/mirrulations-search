@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 
 
 def create_app():
@@ -9,9 +9,10 @@ def create_app():
     def hello_world():
         return "<p>Hello, World!</p>"
 	
-    @app.route("/search")
-    def search(str):
-        return ["Test", "Dummy", str]
+    @app.route("/search/")
+    def search():
+        search_input = request.args.get('str')
+        return ["Test", "Dummy", search_input]
 
 
     return app
