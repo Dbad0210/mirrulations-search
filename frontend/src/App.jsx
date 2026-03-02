@@ -17,6 +17,7 @@ const [yearTo, setYearTo] = useState("");
 const [agencySearch, setAgencySearch] = useState("");
 const [selectedAgencies, setSelectedAgencies] = useState(new Set());
 const [status, setStatus] = useState(new Set());
+const [selectedCfrParts, setSelectedCfrParts] = useState(new Set());
 const TOP_AGENCIES = [
     { code: "EPA", name: "Environmental Protection Agency" },
     { code: "HHS", name: "Health and Human Services" },
@@ -39,10 +40,14 @@ const activeCount =
     (yearFrom ? 1 : 0) +
     (yearTo ? 1 : 0) +
     selectedAgencies.size +
-    status.size;
+    status.size +
+    selectedCfrParts.size;
 const runSearch = async () => {
-const firstAgency = Array.from(selectedAgencies)[0] || ""
-const data = await searchDockets(query, docType, firstAgency)
+const selectedAgencyList = Array.from(selectedAgencies);
+const firstAgency = selectedAgencyList[selectedAgencyList.length - 1] || ""
+const selectedCfrList = Array.from(selectedCfrParts);
+const firstCfr = selectedCfrList[selectedCfrList.length - 1] || "";
+const data = await searchDockets(query, docType, firstAgency, firstCfr)
     setResults(data);
   };
 const advancedPayload = {
@@ -57,6 +62,7 @@ const clearAdvanced = () => {
     setAgencySearch("");
     setSelectedAgencies(new Set());
     setStatus(new Set());
+    setSelectedCfrParts(new Set());
   };
 
 return (
@@ -82,6 +88,8 @@ docType={docType}
 setDocType={setDocType}
 status={status}
 setStatus={setStatus}
+selectedCfrParts={selectedCfrParts}
+setSelectedCfrParts={setSelectedCfrParts}
 clearAdvanced={clearAdvanced}
 applyAdvanced={runSearch}
 activeCount={activeCount}
