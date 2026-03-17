@@ -17,6 +17,16 @@ if ! psql -lqt postgres 2>/dev/null | grep -qw mirrulations; then
     ./db/setup_postgres.sh
 fi
 
+# Install OpenSearch if missing (Mac/Homebrew)
+if ! brew list opensearch &>/dev/null && command -v brew &>/dev/null; then
+    echo "Installing OpenSearch via Homebrew..."
+    brew install opensearch
+fi
+
+# Start OpenSearch
+brew services start opensearch 2>/dev/null || true
+echo "OpenSearch started"
+
 # Build the React frontend
 (cd frontend && npm install && npm run build)
 
