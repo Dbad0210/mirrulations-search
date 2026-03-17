@@ -35,7 +35,7 @@ def _build_paginated_response(results, pagination):
     return response
 
 
-def create_app(dist_dir=None, db_layer=None):
+def create_app(dist_dir=None, db_layer=None, opensearch_layer=None):
     """Create and configure Flask application"""
     if dist_dir is None:
         project_root = os.path.abspath(
@@ -54,7 +54,11 @@ def create_app(dist_dir=None, db_layer=None):
         params = _get_search_params()
         page, page_size = _get_pagination_params()
 
-        logic = InternalLogic("sample_database", db_layer=db_layer)
+        logic = InternalLogic(
+            "sample_database",
+            db_layer=db_layer,
+            opensearch_layer=opensearch_layer
+        )
         result = logic.search(
             params['search_input'],
             params['docket_type'],
