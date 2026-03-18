@@ -19,7 +19,7 @@ Follow `docs/OpensearchInstall.md` to start OpenSearch, then continue here.
 2. Ingest Dummy Data
 
 ```bash
-python db/ingest_docket.py
+python db/ingest_open_search.py
 ```
 
 If successful, the script will print:
@@ -28,17 +28,11 @@ Ingested X records into OpenSearch.
 3. Verify Indexed Data
 
 ```bash
-curl -X GET "localhost:9200/docket-comments/_search?pretty"
+curl -X GET "localhost:9200/comments_demo/_search?pretty"
 ```
 If the ingest worked correctly, this command will return JSON containing the indexed documents.
 
 Stop OpenSearch
 ```bash
 brew services stop opensearch
-```
-
-If you used Docker instead:
-```bash
-docker stop opensearch
-docker rm opensearch
 ```

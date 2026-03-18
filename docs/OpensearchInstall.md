@@ -1,37 +1,8 @@
 # OpenSearch Installation and Launch Guide
 
-This doc shows two ways to run OpenSearch locally:
-- Docker (recommended)
-- Homebrew (macOS)
+This doc shows how to run OpenSearch locally:
 
-Pick one; you do not need both.
-
-## Option A: Docker (recommended)
-
-Start OpenSearch in Docker:
-
-```bash
-docker run -d --name opensearch \
-  -p 9200:9200 -p 9600:9600 \
-  -e "discovery.type=single-node" \
-  -e "plugins.security.disabled=true" \
-  opensearchproject/opensearch:2.11.0
-```
-
-Verify OpenSearch is running (should return JSON output):
-
-```bash
-curl -X GET "http://localhost:9200/"
-```
-
-Stop and remove the container when finished:
-
-```bash
-docker stop opensearch
-docker rm opensearch
-```
-
-## Option B: Homebrew (macOS)
+## Homebrew
 
 Install and run OpenSearch:
 
