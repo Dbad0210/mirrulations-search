@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS cfrparts (
 CREATE TABLE IF NOT EXISTS comments (
     comment_id VARCHAR(50) NOT NULL PRIMARY KEY,
     document_id VARCHAR(50) NOT NULL REFERENCES documents(document_id),
-    comment_text VARCHAR,
-    comment_link VARCHAR UNIQUE,
+    comment_text TEXT,
+    comment_link TEXT UNIQUE
     
 );
