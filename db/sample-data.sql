@@ -1211,3 +1211,16 @@ INSERT INTO cfrParts(
     42,
     '512'
 );
+
+INSERT INTO comments(
+    comment_id,
+    document_id,
+    comment_text,
+    comment_link
+) VALUES (
+    'comment-0001',
+    'CMS-2025-0240-0001',
+    'This is a sample comment for testing',
+    'http://example.com/comment/1'
+);
+
