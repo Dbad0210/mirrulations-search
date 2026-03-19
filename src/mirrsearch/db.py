@@ -95,6 +95,44 @@ class DBLayer:
             results = [r for r in results if r["docket_id"] in cfr_docket_ids]
 
         return results
+    
+    """
+    This function will compile a list of docket ids of the dockets 
+    whose title matches the search term. Returns a set of unique ids.
+    """
+    def _search_dockets_by_title():
+        return dockets
+
+    """
+    This function will compile a list of docket ids of the dockets whose
+    cfr parts match the filter parameters. Returns a set of unique ids.
+    """
+    # def _search_dockets_by_cfr():
+    #     return dockets
+    
+    """
+    This function will compile a list of docket ids of the dockets that hold
+    documents whose title matches the search term. (Docket title does not have 
+    to match). Return a set of unique ids.
+    """
+    # def _search_dockets_by_document_title():
+    #     return dockets
+    
+    """
+    This function will join the 3 sets together with the union operator so that 
+    there are no repeated docket ids listed.
+    """
+    # def join_results():
+    #     return results
+
+    """
+    This function will return the list of all the unique dockets & the corresponding
+    information needed for the frontend display by joining tables & pulling out the
+    right fields for each docket.
+    """
+    # def return_docket_details():
+    #     return details
+    
 
     @staticmethod
     def _process_docket_row(dockets, row):
