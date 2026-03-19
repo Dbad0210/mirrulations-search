@@ -131,8 +131,11 @@ class DBLayer:
     documents whose title matches the search term. (Docket title does not have 
     to match). Return a set of unique ids.
     """
-    # def _search_dockets_by_document_title():
-    #     return dockets
+    def _search_dockets_by_document_title(self, query: str) -> set:
+        sql = "SELECT DISTINCT docket_id FROM documents WHERE document_title ILIKE %s"
+        with self.conn.cursor() as cur:
+            cur.execute(sql, [f"%{(query or '').strip().lower()}%"])
+            return {row[0] for row in cur.fetchall()}
     
     """
     This function will join the 3 sets together with the union operator so that 
