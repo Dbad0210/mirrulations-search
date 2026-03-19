@@ -149,8 +149,56 @@ class DBLayer:
     information needed for the frontend display by joining tables & pulling out the
     right fields for each docket.
     """
-    # def return_docket_details():
-    #     return details
+    def _search_dockets(
+            self, query: str, docket_type_param: str = None,
+            agency: List[str] = None,
+            cfr_part_param: List[str] = None) -> List[Dict[str, Any]]:
+        title_ids = self._search_dockets_by_title(query)
+        cfr_ids = self._search_dockets_by_cfr(cfr_part_param or [])
+        doc_title_ids = self._search_dockets_by_document_title(query)
+        docket_ids = self._join_results(title_ids, cfr_ids, doc_title_ids)
+
+        if not docket_ids:
+            return []
+
+        sql = """
+            SELECT DISTINCT
+                d.docket_id,
+                d.docket_title,
+                d.agency_id,
+                d.docket_type,
+                d.modify_date,
+                cp.title,
+                cp.cfrPart,
+                l.link
+            FROM dockets d
+            JOIN documents doc ON doc.docket_id = d.docket_id
+            LEFT JOIN cfrparts cp ON cp.document_id = doc.document_id
+            LEFT JOIN links l ON l.title = cp.title AND l.cfrPart = cp.cfrPart
+            WHERE d.docket_id = ANY(%s)
+        """
+        params = [list(docket_ids)]
+
+        if docket_type_param:
+            sql += " AND d.docket_type = %s"
+            params.append(docket_type_param)
+
+        if agency:
+            clauses = " OR ".join("d.agency_id ILIKE %s" for _ in agency)
+            sql += f" AND ({clauses})"
+            params.extend(f"%{a}%" for a in agency)
+
+        sql += " ORDER BY d.modify_date DESC, d.docket_id, cp.title, cp.cfrPart LIMIT 50"
+
+        with self.conn.cursor() as cur:
+            cur.execute(sql, params)
+            dockets = {}
+            for row in cur.fetchall():
+                self._process_docket_row(dockets, row)
+            return [
+                {**d, "cfr_refs": list(d["cfr_refs"].values())}
+                for d in dockets.values()
+            ]
     
 
     @staticmethod
