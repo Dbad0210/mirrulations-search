@@ -141,8 +141,8 @@ class DBLayer:
     This function will join the 3 sets together with the union operator so that 
     there are no repeated docket ids listed.
     """
-    # def join_results():
-    #     return results
+    def _join_results(self, title_ids: set, cfr_ids: set, doc_title_ids: set) -> set:
+        return title_ids | cfr_ids | doc_title_ids
 
     """
     This function will return the list of all the unique dockets & the corresponding

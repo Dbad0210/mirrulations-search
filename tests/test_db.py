@@ -378,6 +378,37 @@ def test_search_dockets_by_document_title_queries_documents_table():
     assert params == ["%water quality%"]
 
 
+# --- _join_results tests ---
+
+def test_join_results_combines_all_three_sets():
+    """Union of three disjoint sets contains all docket ids"""
+    db = DBLayer()
+    result = db._join_results({"DOC-001"}, {"DOC-002"}, {"DOC-003"})
+    assert result == {"DOC-001", "DOC-002", "DOC-003"}
+
+
+def test_join_results_deduplicates_across_sets():
+    """Docket ids appearing in multiple sets are only included once"""
+    db = DBLayer()
+    result = db._join_results({"DOC-001", "DOC-002"}, {"DOC-002", "DOC-003"}, {"DOC-001", "DOC-003"})
+    assert result == {"DOC-001", "DOC-002", "DOC-003"}
+    assert len(result) == 3
+
+
+def test_join_results_with_empty_sets():
+    """Empty sets are handled gracefully, returning only ids from non-empty sets"""
+    db = DBLayer()
+    result = db._join_results({"DOC-001"}, set(), set())
+    assert result == {"DOC-001"}
+
+
+def test_join_results_all_empty_returns_empty_set():
+    """All empty sets returns an empty set"""
+    db = DBLayer()
+    result = db._join_results(set(), set(), set())
+    assert result == set()
+
+
 # --- Factory function tests ---
 
 def test_get_postgres_connection_uses_env_and_dotenv(monkeypatch):
