@@ -15,10 +15,12 @@ def ingest_opensearch():
         verify_certs=False,
     )
     
-    # Delete and recreate documents index
-    if client.indices.exists(index="documents"):
-        client.indices.delete(index="documents")
+    # Delete indexes
+    for index in ["documents", "comments"]:
+        if client.indices.exists(index=index):
+            client.indices.delete(index=index)
     
+    # Create documents index
     client.indices.create(
         index="documents",
         body={
@@ -61,10 +63,7 @@ def ingest_opensearch():
         }
     )
     
-    # Delete and recreate comments index
-    if client.indices.exists(index="comments"):
-        client.indices.delete(index="comments")
-    
+    # Create comments index
     client.indices.create(
         index="comments",
         body={
@@ -111,7 +110,7 @@ def ingest_opensearch():
         },
         {
             "agencyId": "DEA",
-            "comment": "",
+            "comment": "Meaningful use standards are important for improving healthcare",
             "docketId": "DEA-2024-0059",
             "documentId": "DEA-2024-0059-0003",
             "documentType": "Rule",
@@ -121,7 +120,7 @@ def ingest_opensearch():
         },
         {
             "agencyId": "CMS",
-            "comment": "",
+            "comment": "Medicare updates will help seniors",
             "docketId": "CMS-2025-0240",
             "documentId": "CMS-2025-0240-0001",
             "documentType": "Proposed Rule",
@@ -140,9 +139,6 @@ def ingest_opensearch():
             "title": "Medicare Advantage plan modifications and updates"
         },
     ]
-    
-    for i, doc in enumerate(documents):
-        client.index(index="documents", id=i, body=doc)
     
     # Insert comments
     comments = [
@@ -178,13 +174,24 @@ def ingest_opensearch():
         },
     ]
     
-    for i, comment in enumerate(comments):
-        client.index(index="comments", id=i, body=comment)
+    # Insert documents and comments into OpenSearch
+    for doc in documents:
+        client.index(
+            index="documents",
+            id=doc["documentId"],
+            body=doc
+        )
     
-    # Refresh indices
+    for comment in comments:
+        client.index(
+            index="comments",
+            id=comment["commentId"],
+            body=comment
+        )
+
     client.indices.refresh(index="documents")
     client.indices.refresh(index="comments")
-    
+
     print(f"✓ Ingested {len(documents)} documents and {len(comments)} comments")
     print("  DEA-2024-0059: 3 docs, 2 comments (term: 'meaningful use')")
     print("  CMS-2025-0240: 2 docs, 4 comments (terms: 'medicare', 'updates')")
