@@ -321,6 +321,15 @@ def test_search_dockets_by_cfr_empty_param_returns_empty_set():
     assert result == set()
 
 
+def test_search_dockets_by_cfr_deduplicates_docket_ids():
+    """Multiple CFR parts matching the same docket produce only one entry in the set"""
+    rows = [("DOC-001",), ("DOC-001",), ("DOC-001",)]
+    db = DBLayer(conn=_FakeConn(rows))
+    result = db._search_dockets_by_cfr([{"title": "Title 42", "part": "413"}])
+    assert result == {"DOC-001"}
+    assert len(result) == 1
+
+
 def test_search_dockets_by_cfr_queries_federal_register_documents():
     """SQL targets federal_register_documents with cfr_title and cfr_part ILIKE clauses"""
     db = DBLayer(conn=_FakeConn([]))
