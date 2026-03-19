@@ -304,6 +304,35 @@ def test_search_dockets_by_title_query_wrapped_with_wildcards():
     assert params == ["%water%"]
 
 
+# --- _search_dockets_by_cfr tests ---
+
+def test_search_dockets_by_cfr_returns_matching_ids():
+    """Returns a set of docket_ids from federal_register_documents matching cfr params"""
+    rows = [("DOC-001",), ("DOC-002",)]
+    db = DBLayer(conn=_FakeConn(rows))
+    result = db._search_dockets_by_cfr([{"title": "Title 42", "part": "413"}])
+    assert result == {"DOC-001", "DOC-002"}
+
+
+def test_search_dockets_by_cfr_empty_param_returns_empty_set():
+    """Returns an empty set without querying when cfr_part_param is empty"""
+    db = DBLayer(conn=_FakeConn([]))
+    result = db._search_dockets_by_cfr([])
+    assert result == set()
+
+
+def test_search_dockets_by_cfr_queries_federal_register_documents():
+    """SQL targets federal_register_documents with cfr_title and cfr_part ILIKE clauses"""
+    db = DBLayer(conn=_FakeConn([]))
+    db._search_dockets_by_cfr([{"title": "Title 42", "part": "413"}])
+    sql, params = db.conn.cursor_obj.executed
+    assert "federal_register_documents" in sql
+    assert "cfr_title ILIKE %s" in sql
+    assert "cfr_part ILIKE %s" in sql
+    assert "%Title 42%" in params
+    assert "%413%" in params
+
+
 # --- Factory function tests ---
 
 def test_get_postgres_connection_uses_env_and_dotenv(monkeypatch):
