@@ -72,57 +72,132 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
             ]
         return results
 
-    def _opensearch_items(self) -> List[Dict[str, Any]]:
-        """Dummy OpenSearch data for text_match_terms testing"""
-        return [
-            # DEA-2024-0059 - 3 docs, 2 comments with "meaningful use"
-            {"docket_id": "DEA-2024-0059", "type": "document",
-            "text": "This document discusses meaningful use criteria"},
-            {"docket_id": "DEA-2024-0059", "type": "document",
-            "text": "Additional meaningful use requirements"},
-            {"docket_id": "DEA-2024-0059", "type": "document",
-            "text": "Final meaningful use guidelines"},
-            {"docket_id": "DEA-2024-0059", "type": "comment",
-            "text": "I support the meaningful use standards"},
-            {"docket_id": "DEA-2024-0059", "type": "comment",
-            "text": "The meaningful use criteria seem reasonable"},
-
-            # CMS-2025-0240 - 2 docs, 4 comments with "medicare" and "updates"
-            {"docket_id": "CMS-2025-0240", "type": "document",
-            "text": "Medicare program updates for 2025 including payment changes"},
-            {"docket_id": "CMS-2025-0240", "type": "document",
-            "text": "Medicare Advantage plan modifications and updates"},
-            {"docket_id": "CMS-2025-0240", "type": "comment",
-            "text": "These medicare changes will help seniors"},
-            {"docket_id": "CMS-2025-0240", "type": "comment",
-            "text": "I have concerns about medicare funding"},
-            {"docket_id": "CMS-2025-0240", "type": "comment",
-            "text": "Medicare should cover more services"},
-            {"docket_id": "CMS-2025-0240", "type": "comment",
-            "text": "Support the medicare updates"},
-        ]
+    def _opensearch_items(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Dummy OpenSearch data matching the real structure with separate indices"""
+        return {
+            "documents": [
+                # DEA-2024-0059 - 3 documents with "meaningful use" in title
+                {
+                    "agencyId": "DEA",
+                    "comment": "",
+                    "docketId": "DEA-2024-0059",
+                    "documentId": "DEA-2024-0059-0001",
+                    "documentType": "Proposed Rule",
+                    "modifyDate": "2024-01-15",
+                    "postedDate": "2024-01-10",
+                    "title": "This document discusses meaningful use criteria for healthcare"
+                },
+                {
+                    "agencyId": "DEA",
+                    "comment": "",
+                    "docketId": "DEA-2024-0059",
+                    "documentId": "DEA-2024-0059-0002",
+                    "documentType": "Rule",
+                    "modifyDate": "2024-02-20",
+                    "postedDate": "2024-02-15",
+                    "title": "Additional meaningful use requirements and standards"
+                },
+                {
+                    "agencyId": "DEA",
+                    "comment": "",
+                    "docketId": "DEA-2024-0059",
+                    "documentId": "DEA-2024-0059-0003",
+                    "documentType": "Rule",
+                    "modifyDate": "2024-03-10",
+                    "postedDate": "2024-03-05",
+                    "title": "Final meaningful use reporting guidelines"
+                },
+                # CMS-2025-0240 - 2 documents with "medicare" and "updates"
+                {
+                    "agencyId": "CMS",
+                    "comment": "",
+                    "docketId": "CMS-2025-0240",
+                    "documentId": "CMS-2025-0240-0001",
+                    "documentType": "Proposed Rule",
+                    "modifyDate": "2025-01-20",
+                    "postedDate": "2025-01-15",
+                    "title": "Medicare program updates for 2025 including payment changes"
+                },
+                {
+                    "agencyId": "CMS",
+                    "comment": "",
+                    "docketId": "CMS-2025-0240",
+                    "documentId": "CMS-2025-0240-0002",
+                    "documentType": "Rule",
+                    "modifyDate": "2025-02-10",
+                    "postedDate": "2025-02-05",
+                    "title": "Medicare Advantage plan modifications and updates"
+                },
+            ],
+            "comments": [
+                # DEA-2024-0059 - 2 comments with "meaningful use"
+                {
+                    "commentId": "DEA-2024-0059-0001",
+                    "commentText": "I support the meaningful use standards proposed",
+                    "docketId": "DEA-2024-0059"
+                },
+                {
+                    "commentId": "DEA-2024-0059-0002",
+                    "commentText": "The meaningful use criteria seem reasonable",
+                    "docketId": "DEA-2024-0059"
+                },
+                # CMS-2025-0240 - 4 comments with "medicare"
+                {
+                    "commentId": "CMS-2025-0240-0001",
+                    "commentText": "These medicare changes will help seniors",
+                    "docketId": "CMS-2025-0240"
+                },
+                {
+                    "commentId": "CMS-2025-0240-0002",
+                    "commentText": "I have concerns about medicare funding",
+                    "docketId": "CMS-2025-0240"
+                },
+                {
+                    "commentId": "CMS-2025-0240-0003",
+                    "commentText": "Medicare should cover more services",
+                    "docketId": "CMS-2025-0240"
+                },
+                {
+                    "commentId": "CMS-2025-0240-0004",
+                    "commentText": "Support the medicare updates proposed here",
+                    "docketId": "CMS-2025-0240"
+                },
+            ]
+        }    
 
     def text_match_terms(self, terms: List[str]) -> List[Dict[str, Any]]:
         """
         Mock version of text_match_terms - searches through dummy OpenSearch data.
+        Mimics searching across documents (title field) and comments (commentText field).
         """
-        # Find matching items
-        matching_items = [
-            item for item in self._opensearch_items()
-            if any(term.lower() in item["text"].lower() for term in terms)
+        data = self._opensearch_items()
+
+        # Search documents by title
+        matching_docs = [
+            doc for doc in data["documents"]
+            if any(term.lower() in doc["title"].lower() for term in terms)
+        ]
+
+        # Search comments by commentText
+        matching_comments = [
+            comment for comment in data["comments"]
+            if any(term.lower() in comment["commentText"].lower() for term in terms)
         ]
 
         # Group by docket and count
         docket_counts = {}
-        for item in matching_items:
-            docket_id = item["docket_id"]
+
+        for doc in matching_docs:
+            docket_id = doc["docketId"]
             if docket_id not in docket_counts:
                 docket_counts[docket_id] = {"document_match_count": 0, "comment_match_count": 0}
-
-            if item["type"] == "document":
-                docket_counts[docket_id]["document_match_count"] += 1
-            elif item["type"] == "comment":
-                docket_counts[docket_id]["comment_match_count"] += 1
+            docket_counts[docket_id]["document_match_count"] += 1
+        
+        for comment in matching_comments:
+            docket_id = comment["docketId"]
+            if docket_id not in docket_counts:
+                docket_counts[docket_id] = {"document_match_count": 0, "comment_match_count": 0}
+            docket_counts[docket_id]["comment_match_count"] += 1
 
         # Format results
         return [

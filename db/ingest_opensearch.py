@@ -1,5 +1,6 @@
 """
-Ingest dummy data into local OpenSearch for testing text_match_terms.
+Ingest dummy data into local OpenSearch matching the real production structure.
+Uses separate indices for documents and comments.
 """
 
 from opensearchpy import OpenSearch
@@ -14,60 +15,177 @@ def ingest_opensearch():
         verify_certs=False,
     )
     
-    index_name = "regulations"
-    
-    # Delete and recreate index
-    if client.indices.exists(index=index_name):
-        client.indices.delete(index=index_name)
+    # Delete and recreate documents index
+    if client.indices.exists(index="documents"):
+        client.indices.delete(index="documents")
     
     client.indices.create(
-        index=index_name,
+        index="documents",
         body={
             "mappings": {
                 "properties": {
-                    "docket_id": {"type": "keyword"},
-                    "type": {"type": "keyword"},
-                    "text": {"type": "text"},
+                    "agencyId": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "comment": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "docketId": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "documentId": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "documentType": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "modifyDate": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "postedDate": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "title": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    }
                 }
             }
         }
     )
     
-    # Dummy data - 2 dockets with documents and comments
-    dummy_data = [
-        # DEA-2024-0059 - 3 docs, 2 comments with "meaningful use"
-        {"docket_id": "DEA-2024-0059", "type": "document", 
-         "text": "This document discusses meaningful use criteria"},
-        {"docket_id": "DEA-2024-0059", "type": "document", 
-         "text": "Additional meaningful use requirements"},
-        {"docket_id": "DEA-2024-0059", "type": "document", 
-         "text": "Final meaningful use guidelines"},
-        {"docket_id": "DEA-2024-0059", "type": "comment", 
-         "text": "I support the meaningful use standards"},
-        {"docket_id": "DEA-2024-0059", "type": "comment", 
-         "text": "The meaningful use criteria seem reasonable"},
-        
-        # CMS-2025-0240 - 2 docs with "medicare" and "updates", 4 comments with "medicare"
-        {"docket_id": "CMS-2025-0240", "type": "document", 
-         "text": "Medicare program updates for 2025 including payment changes"},
-        {"docket_id": "CMS-2025-0240", "type": "document", 
-         "text": "Medicare Advantage plan modifications and updates"},
-        {"docket_id": "CMS-2025-0240", "type": "comment", 
-         "text": "These medicare changes will help seniors"},
-        {"docket_id": "CMS-2025-0240", "type": "comment", 
-         "text": "I have concerns about medicare funding"},
-        {"docket_id": "CMS-2025-0240", "type": "comment", 
-         "text": "Medicare should cover more services"},
-        {"docket_id": "CMS-2025-0240", "type": "comment", 
-         "text": "Support the medicare updates"},
+    # Delete and recreate comments index
+    if client.indices.exists(index="comments"):
+        client.indices.delete(index="comments")
+    
+    client.indices.create(
+        index="comments",
+        body={
+            "mappings": {
+                "properties": {
+                    "commentId": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "commentText": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    },
+                    "docketId": {
+                        "type": "text",
+                        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}
+                    }
+                }
+            }
+        }
+    )
+    
+    # Insert documents
+    documents = [
+        {
+            "agencyId": "DEA",
+            "comment": "",
+            "docketId": "DEA-2024-0059",
+            "documentId": "DEA-2024-0059-0001",
+            "documentType": "Proposed Rule",
+            "modifyDate": "2024-01-15",
+            "postedDate": "2024-01-10",
+            "title": "This document discusses meaningful use criteria for healthcare"
+        },
+        {
+            "agencyId": "DEA",
+            "comment": "",
+            "docketId": "DEA-2024-0059",
+            "documentId": "DEA-2024-0059-0002",
+            "documentType": "Rule",
+            "modifyDate": "2024-02-20",
+            "postedDate": "2024-02-15",
+            "title": "Additional meaningful use requirements and standards"
+        },
+        {
+            "agencyId": "DEA",
+            "comment": "",
+            "docketId": "DEA-2024-0059",
+            "documentId": "DEA-2024-0059-0003",
+            "documentType": "Rule",
+            "modifyDate": "2024-03-10",
+            "postedDate": "2024-03-05",
+            "title": "Final meaningful use reporting guidelines"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": "",
+            "docketId": "CMS-2025-0240",
+            "documentId": "CMS-2025-0240-0001",
+            "documentType": "Proposed Rule",
+            "modifyDate": "2025-01-20",
+            "postedDate": "2025-01-15",
+            "title": "Medicare program updates for 2025 including payment changes"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": "",
+            "docketId": "CMS-2025-0240",
+            "documentId": "CMS-2025-0240-0002",
+            "documentType": "Rule",
+            "modifyDate": "2025-02-10",
+            "postedDate": "2025-02-05",
+            "title": "Medicare Advantage plan modifications and updates"
+        },
     ]
     
-    for i, doc in enumerate(dummy_data):
-        client.index(index=index_name, id=i, body=doc)
+    for i, doc in enumerate(documents):
+        client.index(index="documents", id=i, body=doc)
     
-    client.indices.refresh(index=index_name)
+    # Insert comments
+    comments = [
+        {
+            "commentId": "DEA-2024-0059-0001",
+            "commentText": "I support the meaningful use standards proposed",
+            "docketId": "DEA-2024-0059"
+        },
+        {
+            "commentId": "DEA-2024-0059-0002",
+            "commentText": "The meaningful use criteria seem reasonable",
+            "docketId": "DEA-2024-0059"
+        },
+        {
+            "commentId": "CMS-2025-0240-0001",
+            "commentText": "These medicare changes will help seniors",
+            "docketId": "CMS-2025-0240"
+        },
+        {
+            "commentId": "CMS-2025-0240-0002",
+            "commentText": "I have concerns about medicare funding",
+            "docketId": "CMS-2025-0240"
+        },
+        {
+            "commentId": "CMS-2025-0240-0003",
+            "commentText": "Medicare should cover more services",
+            "docketId": "CMS-2025-0240"
+        },
+        {
+            "commentId": "CMS-2025-0240-0004",
+            "commentText": "Support the medicare updates proposed here",
+            "docketId": "CMS-2025-0240"
+        },
+    ]
     
-    print(f"✓ Ingested {len(dummy_data)} records")
+    for i, comment in enumerate(comments):
+        client.index(index="comments", id=i, body=comment)
+    
+    # Refresh indices
+    client.indices.refresh(index="documents")
+    client.indices.refresh(index="comments")
+    
+    print(f"✓ Ingested {len(documents)} documents and {len(comments)} comments")
     print("  DEA-2024-0059: 3 docs, 2 comments (term: 'meaningful use')")
     print("  CMS-2025-0240: 2 docs, 4 comments (terms: 'medicare', 'updates')")
 
