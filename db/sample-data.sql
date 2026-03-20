@@ -1229,6 +1229,81 @@ INSERT INTO comments(
     '2025-06-30T04:00:00Z',
     'This is a sample comment for testing'
 );
+
+INSERT INTO comments(
+    comment_id,
+    api_link,
+    document_id,
+    duplicate_comment_count,
+    address1,
+    address2,
+    agency_id,
+    city,
+    comment_category,
+    comment,
+    country,
+    docket_id,
+    document_type,
+    email,
+    fax,
+    flex_field1,
+    flex_field2,
+    first_name,
+    submitter_gov_agency,
+    submitter_gov_agency_type,
+    last_name,
+    modification_date,
+    submitter_org,
+    phone,
+    posted_date,
+    postmark_date,
+    reason_withdrawn,
+    received_date,
+    restriction_reason,
+    restriction_reason_type,
+    state_province_region,
+    comment_subtype,
+    comment_title,
+    is_withdrawn,
+    postal_code
+    )
+    VALUES (
+    'CMS-2025-0240-0017',
+    'https://www.regulations.gov/comment/CMS-2025-0240-0017',
+    'CMS-2025-0240-0001',
+    0,
+    Null,
+    Null,
+    'CMS',
+    Null,
+    'Association - Other',
+    'Thank you for the opportunity to submit comments on the End-Stage Renal Disease Quality Incentive Program, specifically on the request for information on the measure concepts under consideration for future years. We at the Center to Advance Palliative Care (CAPC) applaud CMS for recognizing well-being as an important measure concept for patients living with end-stage kidney disease, as well as for their family caregivers. We would like to recommend that a new measure, "access to palliative care" be included as a quality measure for all beneficiaries over age 75 receiving dialysis. As you can see from the publication attached, The Case for Palliative Care in Kidney Care, the prevalence of many debilitating symptoms is quite high among patients receiving hemodialysis in the U.S., and palliative care has been proven to make significantly increase patient well-being by expertly managing these symptoms. Moreover, the involvement of specialty palliative care for the population on hemodialysis greatly reduces avoidable Medicare spending -- by those very improvements in patient and family well-being. In terms of measuring access to palliative care, we recommend that the denominator be limited to those aged 75 or older, as that is the population most likely to have complex co-morbidities and who can thus benefit most from palliative care services. For the numerator, the program might consider a claims-based measure, counting those patients with a Z 51.5 diagnosis code. (Note that while this Z code is not reliable across all Medicare beneficiaries, it is more likely to be valid for outpatient hemodialysis, particularly with CMS guidance on the use of the code.) CMS can pilot the measure and determine a national or regional baseline, and build the quality incentive targets from the baseline collected. Moreover, the use of "access to palliative care" as a quality measure is not unprecedented. Several private health plans use this in their own network quality incentive programs, as described in this blog: https://bettercareplaybook.org/_blog/2020/8/driving-improvements-hospital-care-through-palliative-care-quality-incentives. The measure concept has also been explored for inclusion in some past CMMI models. Thank you again for the opportunity to submit this recommendation. If you have questions or need further information, please contact Allison Silvers, Chief Health Care Transformation Officer at the Center to Advance Palliative Care at allison.silvers@mssm.edu.',
+    NULL,
+    'CMS-2025-0240',
+    'Public Submission',
+    Null,
+    Null,
+    Null,
+    Null,
+    Null,
+    Null,
+    Null,
+    '2025-08-05T20:39:59Z',
+    Null,
+    Null,
+    '2025-08-05T04:00:00Z',
+    '2025-08-05T04:00:00Z',
+    Null,
+    FALSE,
+    '2025-08-05T04:00:00Z',
+    Null,
+    Null,
+    Null,
+    'Public Comment',
+    'Comment on CMS-2025-0240-0001',
+    FALSE,
+    Null
+);
 -- =========================================
 -- FEDERAL REGISTER DOCUMENTS
 -- =========================================
@@ -1353,3 +1428,4 @@ INSERT INTO federal_register_documents (
     '42',
     '413'
 );
+
