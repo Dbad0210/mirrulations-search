@@ -23,6 +23,13 @@ fi
 # Load .env variables
 [[ -f .env ]] && source .env
 
+# Generate JWT_SECRET if not set
+if [[ -z "${JWT_SECRET:-}" ]]; then
+    JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+    echo "JWT_SECRET=$JWT_SECRET" >> .env
+    echo "Generated JWT_SECRET and saved to .env"
+fi
+
 # Stop existing Gunicorn if running (so we can start fresh)
 if [[ -f gunicorn.pid ]]; then
     sudo kill -TERM "$(cat gunicorn.pid)" 2>/dev/null || true
