@@ -32,6 +32,17 @@ fi
 [[ -f .env ]] && source .env
 DB_HOST="${DB_HOST:-localhost}"
 
+if [[ ! -f /usr/share/opensearch/bin/opensearch ]]; then
+    sudo curl -SL https://artifacts.opensearch.org/releases/bundle/opensearch/3.x/opensearch-3.x.repo \
+        -o /etc/yum.repos.d/opensearch-3.x.repo
+    export OPENSEARCH_INITIAL_ADMIN_PASSWORD='M1rrulations!Search'
+    sudo -E yum install -y opensearch
+    sudo sed -i 's/-Xms1g/-Xms256m/' /etc/opensearch/jvm.options
+    sudo sed -i 's/-Xmx1g/-Xmx256m/' /etc/opensearch/jvm.options
+    sudo systemctl enable opensearch
+    sudo systemctl start opensearch
+fi
+
 # Install Postgres (AL2: amazon-linux-extras + yum; AL2023: dnf)
 if ! command -v psql &>/dev/null || [[ "$DB_HOST" == "localhost" || "$DB_HOST" == "127.0.0.1" ]]; then
     if command -v amazon-linux-extras &>/dev/null; then
@@ -86,7 +97,6 @@ sudo ln -sf "${PROJECT_ROOT}/.venv/bin/certbot" /usr/bin/certbot
 sudo systemctl stop mirrsearch 2>/dev/null || true
 
 sudo .venv/bin/certbot certonly --standalone -d "${DOMAIN}"
-
 sudo cp "${PROJECT_ROOT}/${MIRRSEARCH_SERVICE}" "${MIRRSEARCH_SERVICE_PATH}"
 sudo systemctl daemon-reload
 ./prod_up.sh
