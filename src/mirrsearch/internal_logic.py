@@ -1,6 +1,5 @@
 """Internal logic module for search operations with pagination"""
 from typing import List
-from mirrsearch import db
 from mirrsearch.db import get_db
 
 

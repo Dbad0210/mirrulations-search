@@ -309,7 +309,7 @@ class DBLayer:
             docket_counts, buckets(extracted_resp), "matching_extracted", "comment_match_count"
         )
         return [{"docket_id": did, **counts} for did, counts in docket_counts.items()]
-    
+
     def get_agencies(self) -> List[str]:
         if self.conn is None:
             return []
