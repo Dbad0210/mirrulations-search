@@ -59,30 +59,37 @@ def _build_paginated_response(results, pagination):
 
 
 def _make_oauth_handler():
-   """Create OAuthHandler from environment variables or AWS Secrets Manager."""
-   use_aws = os.getenv("USE_AWS_SECRETS", "").lower() in {"1", "true", "yes", "on"}
-   if use_aws:
-       import boto3, json
-       client = boto3.client("secretsmanager", region_name=os.getenv("AWS_REGION", "us-east-1"))
-       secret = json.loads(
-           client.get_secret_value(
-               SecretId=os.getenv("OAUTH_SECRET_NAME", "mirrulations/oauth")
-           )["SecretString"]
-       )
-       return OAuthHandler(
-           base_url=secret.get("base_url", ""),
-           google_client_id=secret.get("google_client_id", ""),
-           google_client_secret=secret.get("google_client_secret", ""),
-           jwt_secret=secret.get("jwt_secret", "dev-secret")
-       )
-   return OAuthHandler(
-       base_url=os.getenv("BASE_URL", "http://localhost:80"),
-       google_client_id=os.getenv("GOOGLE_CLIENT_ID", ""),
-       google_client_secret=os.getenv("GOOGLE_CLIENT_SECRET", ""),
-       jwt_secret=os.getenv("JWT_SECRET", "dev-secret")
-   )
+    """Create OAuthHandler from environment variables or AWS Secrets Manager."""
+    use_aws = os.getenv("USE_AWS_SECRETS", "").lower() in {"1", "true", "yes", "on"}
+    if use_aws:
+        return _make_oauth_handler_from_aws()
+    return OAuthHandler(
+        base_url=os.getenv("BASE_URL", "http://localhost:80"),
+        google_client_id=os.getenv("GOOGLE_CLIENT_ID", ""),
+        google_client_secret=os.getenv("GOOGLE_CLIENT_SECRET", ""),
+        jwt_secret=os.getenv("JWT_SECRET", "dev-secret")
+    )
 
 
+def _make_oauth_handler_from_aws():
+    """Create OAuthHandler from AWS Secrets Manager."""
+    import boto3  # pylint: disable=import-outside-toplevel
+    import json  # pylint: disable=import-outside-toplevel
+    client = boto3.client(
+        "secretsmanager",
+        region_name=os.getenv("AWS_REGION", "us-east-1")
+    )
+    secret = json.loads(
+        client.get_secret_value(
+            SecretId=os.getenv("OAUTH_SECRET_NAME", "mirrulations/oauth")
+        )["SecretString"]
+    )
+    return OAuthHandler(
+        base_url=secret.get("base_url", ""),
+        google_client_id=secret.get("google_client_id", ""),
+        google_client_secret=secret.get("google_client_secret", ""),
+        jwt_secret=secret.get("jwt_secret", "dev-secret")
+    )
 
 
 def _get_user_from_cookie(oauth_handler):
