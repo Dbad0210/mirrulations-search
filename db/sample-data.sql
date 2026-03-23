@@ -970,7 +970,7 @@ INSERT INTO documents(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -980,7 +980,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -990,7 +990,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1000,7 +1000,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1010,7 +1010,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1020,7 +1020,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1030,7 +1030,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1040,7 +1040,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1050,7 +1050,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1060,7 +1060,7 @@ INSERT INTO links(
 
 INSERT INTO links(
     title,
-    cfrPart,
+    cfrpart,
     link
 ) VALUES (
     42,
@@ -1076,7 +1076,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1088,7 +1088,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1100,7 +1100,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1112,7 +1112,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1124,7 +1124,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1136,7 +1136,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1148,7 +1148,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1160,7 +1160,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1172,7 +1172,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0001',
     NULL,
@@ -1184,7 +1184,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1196,7 +1196,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1208,7 +1208,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1220,7 +1220,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1232,7 +1232,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1244,7 +1244,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1256,7 +1256,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-0009',
     '2025-13271',
@@ -1268,7 +1268,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1280,7 +1280,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1292,7 +1292,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1304,7 +1304,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1316,7 +1316,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1328,7 +1328,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1340,7 +1340,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14108',
     '2025-19787',
@@ -1352,7 +1352,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1364,7 +1364,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1376,7 +1376,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1388,7 +1388,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1400,7 +1400,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1412,7 +1412,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1424,7 +1424,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-14109',
     '2025-21458',
@@ -1436,7 +1436,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-1544',
     '2025-15492',
@@ -1448,7 +1448,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-1544',
     '2025-15492',
@@ -1460,7 +1460,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-1544',
     '2025-15492',
@@ -1472,7 +1472,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-1544',
     '2025-15492',
@@ -1484,7 +1484,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0304-1544',
     '2025-15492',
@@ -1496,7 +1496,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0240-0001',
     '2025-20681',
@@ -1508,7 +1508,7 @@ INSERT INTO cfrParts(
     document_id,
     frDocNum,
     title,
-    cfrPart
+    cfrpart
 ) VALUES (
     'CMS-2025-0240-0001',
     '2025-20681',
