@@ -22,7 +22,7 @@ else:
 class DBLayer:
     conn: Any = None
 
-    def search(
+    def search( # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
             query: str,
             docket_type_param: str = None,
@@ -50,12 +50,12 @@ class DBLayer:
             cur.execute(sql, params)
             return {row[0] for row in cur.fetchall()}
 
-    def _search_dockets_postgres(  # pylint: disable=too-many-locals
+    def _search_dockets_postgres(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self, query: str, docket_type_param: str = None,
             agency: List[str] = None,
             cfr_part_param: List[str] = None,
-            start_date: str = None,
-            end_date: str = None) -> List[Dict[str, Any]]:
+            start_date: str = None, # pylint: disable=unused-argument
+            end_date: str = None) -> List[Dict[str, Any]]: # pylint: disable=unused-argument
         sql = """
             SELECT DISTINCT
                 d.docket_id,
