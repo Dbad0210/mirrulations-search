@@ -159,9 +159,9 @@ def test_search_dockets_postgres_cfr_filter_from_api_dict():
     )
     sql, params = db.conn.cursor_obj.executed
     assert "cp.cfrPart ILIKE %s" in sql
-    assert "federal_register_documents" in sql
-    assert "frd.cfr_title = %s" in sql
-    assert "frd.cfr_part = %s" in sql
+    assert "JOIN cfrparts cp2 ON cp2.document_id = d2.document_id" in sql
+    assert "cp2.title = %s" in sql
+    assert "cp2.cfrPart = %s" in sql
     assert params == ["%renal%", "%413%", "42 CFR Parts 413 and 512", "413"]
 
 

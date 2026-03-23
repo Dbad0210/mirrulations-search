@@ -65,8 +65,7 @@ def _cfr_exact_title_part_pairs(cfr_part_param) -> List[tuple[str, str]]:
     """
     Extract exact CFR (title, part) pairs from dict-style filter payloads.
 
-    Used as a second-pass filter to preserve older behavior from the
-    federal_register_documents table when clients send
+    Used as a second-pass filter to preserve older behavior when clients send
     ``[{\"title\": \"...\", \"part\": \"...\"}]``.
     """
     if not cfr_part_param:
@@ -147,8 +146,13 @@ class DBLayer:
         """
         if self.conn is None or not cfr_pairs:
             return set()
-        clauses = " OR ".join("(cfr_title = %s AND cfr_part = %s)" for _ in cfr_pairs)
-        sql = f"SELECT DISTINCT docket_id FROM federal_register_documents WHERE ({clauses})"
+        clauses = " OR ".join("(cp.title = %s AND cp.cfrPart = %s)" for _ in cfr_pairs)
+        sql = f"""
+            SELECT DISTINCT d.docket_id
+            FROM documents d
+            JOIN cfrparts cp ON cp.document_id = d.document_id
+            WHERE ({clauses})
+        """
         params: List[str] = []
         for title, part in cfr_pairs:
             params.append(title)
@@ -194,17 +198,18 @@ class DBLayer:
             sql += f" AND ({clauses})"
             params.extend(f"%{p}%" for p in cfr_patterns)
         # For dict-style filters ({title, part}), also constrain dockets by exact
-        # CFR title/part mapping in federal_register_documents in this first query.
+        # CFR title/part mapping in cfrparts (via documents->docket_id) in this first query.
         exact_pairs = _cfr_exact_title_part_pairs(cfr_part_param)
         if exact_pairs:
             exact_clauses = " OR ".join(
-                "(frd.cfr_title = %s AND frd.cfr_part = %s)"
+                "(cp2.title = %s AND cp2.cfrPart = %s)"
                 for _ in exact_pairs
             )
             sql += (
                 " AND EXISTS ("
-                "SELECT 1 FROM federal_register_documents frd "
-                "WHERE frd.docket_id = d.docket_id "
+                "SELECT 1 FROM documents d2 "
+                "JOIN cfrparts cp2 ON cp2.document_id = d2.document_id "
+                "WHERE d2.docket_id = d.docket_id "
                 f"AND ({exact_clauses})"
                 ")"
             )
