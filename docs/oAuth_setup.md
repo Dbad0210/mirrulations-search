@@ -34,13 +34,22 @@ In both dev and prod, the system will get configuration options from a `.env` fi
 * `GOOGLE_CLIENT_SECRET`: The OAuth 2.0 Client Secret from Google Cloud Console
  
 Template `.env` file (in dev and prod):
- 
+
+Setup required for testing:
+
+Before running ./dev_up.sh, add to the .env file in the project root:
+
 ```
-BASE_URL=<redirect-URI>
-GOOGLE_CLIENT_ID=<your-client-id>
-GOOGLE_CLIENT_SECRET=<your-client-secret>
+BASE_URL=http://localhost
+GOOGLE_CLIENT_ID=<Get from 1Password under Google Cloud Console>
+GOOGLE_CLIENT_SECRET=<get from 1Password under Google Cloud Console>
 ```
- 
+
+Also run:
+pip install -r requirements.txt
+
+Run this command if rollout issues persist: npm install react-router-dom
+
 In prod you also need to have the following values for the **AWS DNS Subdomain System**:
 * `USERNAME` - Your username in the AWS DNS Subdomain System
 * `TOKEN` - The bearer token provided by the AWS DNS Subdomain System
