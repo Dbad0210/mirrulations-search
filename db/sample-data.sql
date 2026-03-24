@@ -2072,7 +2072,9 @@ INSERT INTO federal_register_documents (
     pdf_url,
     json_url,
     start_page,
-    end_page
+    end_page,
+    title,
+    cfrpart
 ) VALUES (
     '2025-07127',
     NULL,
@@ -2112,7 +2114,9 @@ INSERT INTO federal_register_documents (
     pdf_url,
     json_url,
     start_page,
-    end_page
+    end_page,
+    title,
+    cfrpart
 ) VALUES (
     '2025-13887',
     NULL,
@@ -2152,7 +2156,9 @@ INSERT INTO federal_register_documents (
     pdf_url,
     json_url,
     start_page,
-    end_page
+    end_page,
+    title,
+    cfrpart
 ) VALUES (
     '2026-04829',
     NULL,
