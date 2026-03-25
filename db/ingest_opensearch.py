@@ -3,25 +3,52 @@ Ingest real production-like data into local OpenSearch matching the actual struc
 Uses separate indices for documents, comments, and comments_extracted_text.
 """
 
-from opensearchpy import OpenSearch
+import sys
+from pathlib import Path
+
+# Allow `python db/ingest_opensearch.py` from repo root without PYTHONPATH.
+_ROOT = Path(__file__).resolve().parent.parent
+_src = _ROOT / "src"
+if _src.is_dir() and str(_src) not in sys.path:
+    sys.path.insert(0, str(_src))
+
+# Reload .env from disk so OpenSearch settings win over a polluted shell.
+# (``source .env`` in bash can mangle values with ``!``; default load_dotenv does
+# not override existing env vars.)
+try:
+    from dotenv import load_dotenv as _load_dotenv
+except ImportError:
+    pass
+else:
+    _env_path = _ROOT / ".env"
+    if _env_path.is_file():
+        _load_dotenv(_env_path, override=True)
+
+from mirrsearch.db import get_opensearch_connection  # pylint: disable=wrong-import-position
 
 
-def ingest_opensearch(): # pylint: disable=too-many-statements,too-many-branches
-    """Insert real production-like documents, comments, and extracted text into local OpenSearch"""
+def ingest_opensearch():
+    """Insert production-like documents, comments, and extracted text into local OpenSearch."""
+    try:
+        client = get_opensearch_connection()
+        # Force a request early so we can exit gracefully if OpenSearch is down.
+        client.info()
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        print(f"OpenSearch is not running (skipping ingest): {e}")
+        print(
+            "Hint: secured nodes need HTTPS. Ensure .env has OPENSEARCH_USER + "
+            "OPENSEARCH_PASSWORD (or OPENSEARCH_INITIAL_ADMIN_PASSWORD) and either "
+            "OPENSEARCH_USE_SSL=true or omit it (HTTPS is assumed when creds are set). "
+            "Quote passwords with ! in .env, e.g. OPENSEARCH_PASSWORD='your!pass'."
+        )
+        return
 
-    client = OpenSearch(
-        hosts=[{"host": "localhost", "port": 9200}],
-        use_ssl=False,
-        verify_certs=False,
-    )
-
-    # Delete and recreate documents index
-    if client.indices.exists(index="documents_text"):
-        client.indices.delete(index="documents_text")
-
-    # Create with proper mapping
+    # Delete existing indexes for a clean ingest.
+    for index in ["documents", "comments", "comments_extracted_text"]:
+        if client.indices.exists(index=index):
+            client.indices.delete(index=index)
     client.indices.create(
-        index="documents_text",
+        index="documents",
         body={
             "mappings": {
                 "properties": {
@@ -161,6 +188,56 @@ def ingest_opensearch(): # pylint: disable=too-many-statements,too-many-branches
             "documentText": ""
         },
         {
+            "agencyId": "CMS",
+            "comment": "",
+            "docketId": "CMS-2025-0304",
+            "documentId": "CMS-2025-0304-0001",
+            "documentType": "Proposed Rule",
+            "modifyDate": "2025-03-20",
+            "postedDate": "2025-03-15",
+            "title": "Medicare Part B payment policies and coverage changes for calendar year 2026"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": "Medicare shared savings program requirements and Medicare Prescription Drug Inflation Rebate Program updates",
+            "docketId": "CMS-2025-0304",
+            "documentId": "CMS-2025-0304-0002",
+            "documentType": "Rule",
+            "modifyDate": "2025-04-10",
+            "postedDate": "2025-04-05",
+            "title": "Updates to Medicare Promoting Interoperability Program requirements"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": "",
+            "docketId": "CMS-2025-0304",
+            "documentId": "CMS-2025-0304-0003",
+            "documentType": "Rule",
+            "modifyDate": "2025-05-10",
+            "postedDate": "2025-05-05",
+            "title": "Updates to ESRD Treatment Choices Model for calendar year 2026"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": "Medicare rural payment support for underserved communities",
+            "docketId": "CMS-2026-0001",
+            "documentId": "CMS-2026-0001-0001",
+            "documentType": "Rule",
+            "modifyDate": "2025-12-01",
+            "postedDate": "2025-12-01",
+            "title": "Rural dialysis access and payment operations update"
+        },
+        {
+            "agencyId": "CMS",
+            "comment": None,
+            "docketId": "CMS-2019-0100",
+            "documentId": "CMS-2019-0100-0559",
+            "documentType": "Rule",
+            "modifyDate": "2019-11-08T17:42:19+00:00",
+            "postedDate": "2019-10-31T04:00:00+00:00",
+            "title": "CY 2020 Home Health Prospective Payment System Rate Update; Value-Based Purchasing Model; Quality Reporting Requirements CMS-1711-FC"
+        },
+        {
             "docketId": "CMS-2025-0240",
             "documentId": "CMS-2025-0240-0214",
             "documentText": ""
@@ -195,7 +272,7 @@ def ingest_opensearch(): # pylint: disable=too-many-statements,too-many-branches
     # fmt: on
 
     for i, doc in enumerate(documents_text):
-        client.index(index="documents_text", id=i, body=doc)
+        client.index(index="documents", id=i, body=doc)
 
     # Insert comments
     # fmt: off
@@ -261,6 +338,36 @@ def ingest_opensearch(): # pylint: disable=too-many-statements,too-many-branches
             "commentText": "My name is Mutima Jackson-Anderson, and I am writing on behalf of the Ruby A. Neeson Diabetes Awareness Foundation (RANDAF), a Georgia-based charitable institution to express urgency in the need to remove oral only Phosphate Lowering Therapies (PLTs) from the End Stage Renal Disease (ESRD) bundle. As the executive director of RANDAF, this communication is to prioritize the health care needs of vulnerable patients who have been unintendedly harmed because of the problematic policy decision made by Centers for Medicare &amp; Medicaid Services (CMS).<br/><br/>This comment is a call to immediate action. I acknowledge that CMS established the ESRD bundle payment system over a decade ago to better manage the cost of critical dialysis care, a life-sustaining treatment. Yet, at the time, it was understood that medication taken orally, such as PLTs, did not belong in the bundle with those drugs that are infused or provided intravenously. However, disquietingly, beginning in January of 2025, oral only PLTs were added to the ESRD bundle. As a group of patient advocates, we are bothered that this directive is intensely distressing because bundled payments create financial disincentives for patients to have access to all therapies available. Although, unintentional, additional adverse harm to this policy has caused Black Americans, particularly men, to be 3.5 times more likely to develop kidney failure. It&rsquo;s vital to understand this demographic only make up just 13% of the population yet account for 35% of dialysis patients&mdash;and are far less likely to receive a transplant. Nursing home dialysis patients are already losing access to on-site treatment. Disruptions in care have triggered compliance issues and citations, forcing facilities to cut services. Moreover, America&#39;s labor force &ndash; from farmworkers to firefighters&mdash;are at heightened risk due to exposure to heat, chemicals, and pollutants. These working Americans keep our country functioning and deserve access to modern treatments.<br/><br/>The bundle is failing patients because of a lack of innovation and poor survival rates; furthermore, the bundle system needs to be completely reformed. CMS must reverse this policy and remove oral-only PLTs from the ESRD bundle so that patients have full access to the treatment regimen prescribed by their physician.<br/><br/>To conclude my comment, I reiterate my intention to prioritize the health care needs of vulnerable patients who have been unintendedly harmed because of the problematic policy decision made by CMS.",
             "docketId": "CMS-2025-0240"
         },
+        {
+            "commentId": "CMS-2019-0100-0438",
+            "commentText": "Dear Administrator Verma: <br/><br/>On behalf of the Academy of Geriatric Physical Therapy of the American Physical Therapy Association (Academy of Geriatric Physical Therapy), I am writing to submit comments in response to the Centers for Medicare and Medicaid Services (CMS) Calendar Year (CY) 2020 Home Health Prospective Payment System (HH PPS) Rate Update.",
+            "docketId": "CMS-2019-0100"
+        },
+        {
+            "commentId": "CMS-2019-0100-0424",
+            "commentText": "Dear Administrator Verma: <br/><br/>I am writing in response to the request for comments on the Centers for Medicare and Medicaid Services (CMS) Calendar Year (CY) 2020 Home Health Prospective Payment System (PPS) Rate Update proposed rule.<br/>",
+            "docketId": "CMS-2019-0100"
+        },
+        {
+            "commentId": "CMS-2019-0100-0431",
+            "commentText": "September 8, 2019<br/> <br/>Seema Verma, MPH<br/>Administrator<br/>Centers for Medicare and Medicaid Services<br/>Department of Health and Human Services<br/>Room 445-G<br/>Attn: CMS-1711-P<br/>Hubert Humphrey Building<br/>200 Independence Ave, SW<br/>Washington, DC 20201<br/> <br/>Submitted electronically",
+            "docketId": "CMS-2019-0100"
+        },
+        {
+            "commentId": "CMS-2025-0304-0001",
+            "commentText": "Medicare Shared Savings Program requirements for calendar year 2026",
+            "docketId": "CMS-2025-0304"
+        },
+        {
+            "commentId": "CMS-2025-0304-0002",
+            "commentText": "Medicare Prescription Drug Inflation Rebate Program updates and Part B coverage policy changes",
+            "docketId": "CMS-2025-0304"
+        },
+        {
+            "commentId": "DEA-2024-0059-16885",
+            "commentText": "Official Comment Drug Enforcement Agency ,<br/><br/>I am writing to express my support for the proposal to reclassify marijuana from a Schedule I to a Schedule III substance under the Controlled Substances Act. <br/><br/>This is an important step toward a change in marijuana policy that addresses the decades-long discrimination against Black and Brown communities.",
+            "docketId": "DEA-2024-0059"
+        }
     ]
     # pylint: enable=line-too-long
     # fmt: on
@@ -364,18 +471,19 @@ def ingest_opensearch(): # pylint: disable=too-many-statements,too-many-branches
         client.index(index="comments_extracted_text", id=i, body=extracted)
 
     # Refresh indices
-    client.indices.refresh(index="documents_text")
+    client.indices.refresh(index="documents")
     client.indices.refresh(index="comments")
     client.indices.refresh(index="comments_extracted_text")
 
-    print(f"✓ Ingested {len(documents_text)} document(s)")
-    print(f"✓ Ingested {len(comments)} comment(s)")
-    print(f"✓ Ingested {len(extracted_texts)} comment(s) (extracted text from attachments)")
+    print(f"✓ Ingested {len(documents_text)} documents")
+    print(f"✓ Ingested {len(comments)} comments")
+    print(f"✓ Ingested {len(extracted_texts)} comments (extracted text from attachments)")
     print("\nDockets included:")
-    print("  FAA-2025-0618: 5 docs, 6 comments, 4 extracted texts total")
-    print("  CMS-2025-0240: 3 docs, 6 comments, 4 extracted texts total")
-    print("  CMS-2025-0304: 5 docs, 0 comments, 4 extracted texts total")
-    print("  OSHA-2025-0005: 4 docs, 0 comments, 0 extracted texts total")
+    print("  DEA-2024-0059")
+    print("  CMS-2025-0240")
+    print("  CMS-2019-0100")
+    print("  CMS-2025-0304")
+    print("  CMS-2026-0001")
 
 
 if __name__ == "__main__":

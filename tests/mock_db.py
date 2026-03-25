@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Set
 
 
 class MockDBLayer:  # pylint: disable=too-few-public-methods
@@ -85,7 +85,7 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
     def _opensearch_items(self) -> Dict[str, List[Dict[str, Any]]]:
         """Dummy OpenSearch data matching real production structure"""
         return {
-        "documents_text": [
+            "documents": [
                 # CMS-2025-0001 - 1 document with Federal Register text
                 {
                     "docketId": "CMS-2025-0001",
@@ -212,12 +212,15 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
             ]
         }
 
-    def text_match_terms(self, terms: List[str]) -> List[Dict[str, Any]]:  # pylint: disable=too-many-locals
+    def text_match_terms(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements,unused-argument
+            self,
+            terms: List[str],
+            opensearch_client=None) -> List[Dict[str, Any]]:
         """
         Mock version that mirrors OpenSearch behavior:
-        - documents_text: searches documentText
-        - comments: searches commentText  
-        - comments_extracted_text: searches extractedText (counts as comments)
+        - documents: documentText (and aligns with documents index)
+        - comments: commentText → comment_match_count
+        - comments_extracted_text: extractedText → document_match_count (distinct commentId)
         """
         data = self._opensearch_items()
 
@@ -227,35 +230,27 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
                 return False
             return term.lower() in text.lower()
 
-        # Match documents_text (documentText)
         matching_docs = [
-            doc for doc in data["documents_text"]
+            doc for doc in data["documents"]
             if any(
                 matches_phrase(doc.get("documentText", ""), term)
                 for term in terms
             )
         ]
 
-        # Match comments (commentText)
-        matching_comments = [
-            comment for comment in data["comments"]
-            if any(
-                matches_phrase(comment["commentText"], term)
-                for term in terms
-            )
-        ]
+        comment_ids_by_docket: Dict[str, Set[str]] = {}
+        for comment in data["comments"]:
+            if any(matches_phrase(comment["commentText"], term) for term in terms):
+                did = comment["docketId"]
+                comment_ids_by_docket.setdefault(did, set()).add(comment["commentId"])
 
-        # Match extracted text (extractedText) - counts as comments
-        matching_extracted = [
-            extracted for extracted in data["comments_extracted_text"]
-            if any(
-                matches_phrase(extracted["extractedText"], term)
-                for term in terms
-            )
-        ]
+        extracted_ids_by_docket: Dict[str, Set[str]] = {}
+        for extracted in data["comments_extracted_text"]:
+            if any(matches_phrase(extracted["extractedText"], term) for term in terms):
+                did = extracted["docketId"]
+                extracted_ids_by_docket.setdefault(did, set()).add(extracted["commentId"])
 
-        # Group by docket
-        docket_counts = {}
+        docket_counts: Dict[str, Dict[str, int]] = {}
 
         for doc in matching_docs:
             docket_id = doc["docketId"]
@@ -265,21 +260,23 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
             })
             docket_counts[docket_id]["document_match_count"] += 1
 
-        for comment in matching_comments:
-            docket_id = comment["docketId"]
-            docket_counts.setdefault(docket_id, {
+        for did, ids in extracted_ids_by_docket.items():
+            if not ids:
+                continue
+            docket_counts.setdefault(did, {
                 "document_match_count": 0,
                 "comment_match_count": 0
             })
-            docket_counts[docket_id]["comment_match_count"] += 1
+            docket_counts[did]["document_match_count"] += len(ids)
 
-        for extracted in matching_extracted:
-            docket_id = extracted["docketId"]
-            docket_counts.setdefault(docket_id, {
+        for did, ids in comment_ids_by_docket.items():
+            if not ids:
+                continue
+            docket_counts.setdefault(did, {
                 "document_match_count": 0,
                 "comment_match_count": 0
             })
-            docket_counts[docket_id]["comment_match_count"] += 1
+            docket_counts[did]["comment_match_count"] = len(ids)
 
         return [
             {
@@ -289,3 +286,44 @@ class MockDBLayer:  # pylint: disable=too-few-public-methods
             }
             for docket_id, counts in docket_counts.items()
         ]
+
+    def get_dockets_by_ids(self, docket_ids: List[str]) -> List[Dict[str, Any]]:  # pylint: disable=unused-argument
+        return []
+
+    def get_docket_document_comment_totals(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+            self,
+            docket_ids: List[str],
+            opensearch_client=None) -> Dict[str, Dict[str, int]]:
+        # Denominators derived from the same dummy OpenSearch data used by
+        # text_match_terms(), so numerator/denominator are consistent.
+        _ = opensearch_client
+        data = self._opensearch_items()
+
+        totals: Dict[str, Dict[str, int]] = {}
+        docket_ids_str = {str(d) for d in docket_ids}
+
+        for doc in data["documents"]:
+            did = str(doc["docketId"])
+            if did not in docket_ids_str:
+                continue
+            totals.setdefault(did, {
+                "document_total_count": 0,
+                "comment_total_count": 0,
+            })
+            totals[did]["document_total_count"] += 1
+
+        # Distinct commentId from comments index only (matches OpenSearch denominator).
+        comment_ids_by_docket: Dict[str, Set[str]] = {}
+        for comment in data["comments"]:
+            did = str(comment["docketId"])
+            if did not in docket_ids_str:
+                continue
+            comment_ids_by_docket.setdefault(did, set()).add(comment["commentId"])
+        for did, cids in comment_ids_by_docket.items():
+            totals.setdefault(did, {
+                "document_total_count": 0,
+                "comment_total_count": 0,
+            })
+            totals[did]["comment_total_count"] = len(cids)
+
+        return totals
