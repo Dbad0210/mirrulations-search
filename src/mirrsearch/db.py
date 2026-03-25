@@ -397,14 +397,12 @@ class DBLayer:
         Search OpenSearch for dockets containing the given terms.
 
         Searches:
-        - documents index: title and comment fields
-        - comments index: commentText field (phrase matching)
-        - comments_extracted_text index: extractedText field (from PDF attachments)
+        - documents index: title and documentText fields
+        - comments index: commentText field
+        - comments_extracted_text index: extractedText field (counted as document-side evidence)
 
         Returns list of {docket_id, document_match_count, comment_match_count}.
-        comment_match_count is the number of distinct commentId values that match
-        (body and/or extracted text); multiple hits in one comment or multiple
-        extracted chunks for the same comment still count as one.
+        comment_match_count is distinct commentId matches from comments index only.
         """
         if opensearch_client is None:
             opensearch_client = get_opensearch_connection()
@@ -456,8 +454,7 @@ class DBLayer:
         Return per-docket totals for documents and comments.
 
         document_total_count: OpenSearch documents index rows per docket.
-        comment_total_count: distinct commentId values across comments and
-        comments_extracted_text (same universe as comment match numerators).
+        comment_total_count: distinct commentId values from comments index only.
         """
         if not docket_ids:
             return {}
@@ -486,16 +483,10 @@ class DBLayer:
 
             doc_response = opensearch_client.search(index="documents", body=doc_query)
 
-            try:
-                comment_response = opensearch_client.search(
-                    index="comments,comments_extracted_text",
-                    body=comment_body,
-                )
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"OpenSearch comment totals multi-index failed, comments only: {e}")
-                comment_response = opensearch_client.search(
-                    index="comments", body=comment_body
-                )
+            comment_response = opensearch_client.search(
+                index="comments",
+                body=comment_body,
+            )
 
             totals: Dict[str, Dict[str, int]] = {}
 
@@ -535,34 +526,65 @@ class DBLayer:
                 return {"aggregations": {"by_docket": {"buckets": []}}}
 
         docket_counts: Dict = {}
-        doc_resp = safe_search("documents", self._build_docket_agg_query(
-            "matching_docs",
-            [{"multi_match": {"query": t, "fields": ["title", "comment"]}} for t in terms]
-        ))
+        doc_resp = safe_search(
+            "documents",
+            self._build_docket_agg_query(
+                "matching_docs",
+                [
+                    {
+                        "multi_match": {
+                            "query": t,
+                            "fields": ["title", "documentText"],
+                        }
+                    }
+                    for t in terms
+                ],
+            ),
+        )
         comment_resp = safe_search(
             "comments",
             self._build_docket_agg_query_unique_comments(
                 "matching_comments",
-                [{"match_phrase": {"commentText": t}} for t in terms],
+                [{"match": {"commentText": t}} for t in terms],
             ),
         )
         extracted_resp = safe_search(
             "comments_extracted_text",
             self._build_docket_agg_query_unique_comments(
                 "matching_extracted",
-                [{"match_phrase": {"extractedText": t}} for t in terms],
+                [{"match": {"extractedText": t}} for t in terms],
             ),
         )
         self._accumulate_counts(
             docket_counts, buckets(doc_resp), "matching_docs", "document_match_count"
         )
-        merged_comments = self._merge_unique_comment_matches(comment_resp, extracted_resp)
-        for did, cnt in merged_comments.items():
+        # comNum is strictly commentText matches from comments index.
+        comment_ids_by_docket = self._comment_ids_per_docket_from_agg(
+            comment_resp, "matching_comments"
+        )
+        for did, ids in comment_ids_by_docket.items():
             docket_counts.setdefault(
                 did, {"document_match_count": 0, "comment_match_count": 0}
             )
-            docket_counts[did]["comment_match_count"] = cnt
+            docket_counts[did]["comment_match_count"] = len(ids)
+
+        # Treat extracted attachment text as document-side evidence.
+        extracted_ids_by_docket = self._comment_ids_per_docket_from_agg(
+            extracted_resp, "matching_extracted"
+        )
+        for did, ids in extracted_ids_by_docket.items():
+            docket_counts.setdefault(
+                did, {"document_match_count": 0, "comment_match_count": 0}
+            )
+            docket_counts[did]["document_match_count"] += len(ids)
         return [{"docket_id": did, **counts} for did, counts in docket_counts.items()]
+
+    def get_agencies(self) -> List[str]:
+        if self.conn is None:
+            return []
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT DISTINCT agency_id FROM dockets ORDER BY agency_id")
+            return [row[0] for row in cur.fetchall()]
 
 
 def _get_secrets_from_aws() -> Dict[str, str]:

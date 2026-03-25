@@ -714,9 +714,9 @@ INSERT INTO documents(
     NULL,
     NULL,
     NULL,
-    NULL,
-    NULL,
-    NULL,
+    NULL,  -- flex_field1
+    NULL,  -- flex_field2
+    NULL,  -- first_name
     NULL,
     NULL,
     NULL,
@@ -1088,13 +1088,7 @@ INSERT INTO documents (
     NULL,
     'Notice of Proposed Rulemaking (NPRM)',
     'Airworthiness Directives: The Boeing Company Airplanes',
-    [
-        "Air Transportation",
-        "Aircraft",
-        "Aviation Safety",
-        "Incorporation by Reference",
-        "Safety"
-    ],
+    '{"Air Transportation","Aircraft","Aviation Safety","Incorporation by Reference","Safety"}',
     FALSE,
     NULL
 );
@@ -2173,3 +2167,4 @@ INSERT INTO federal_register_documents (
     12059,
     12064
 );
+
