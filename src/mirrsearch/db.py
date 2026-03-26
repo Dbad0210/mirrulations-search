@@ -151,7 +151,7 @@ class DBLayer:
         clauses = " OR ".join("(cp.title = %s AND cp.cfrPart = %s)" for _ in cfr_pairs)
         sql = f"""
             SELECT DISTINCT d.docket_id
-            FROM documents d
+            FROM documentsWithFRdoc d
             JOIN cfrparts cp ON cp.frdocnum = d.frdocnum
             WHERE ({clauses})
         """
@@ -180,7 +180,7 @@ class DBLayer:
                 cp.cfrPart,
                 l.link
             FROM dockets d
-            JOIN documents doc ON doc.docket_id = d.docket_id
+            JOIN documentsWithFRdoc doc ON doc.docket_id = d.docket_id
             LEFT JOIN cfrparts cp ON cp.frdocnum = doc.frdocnum
             LEFT JOIN links l ON l.title = cp.title AND l.cfrPart = cp.cfrPart
             WHERE d.docket_title ILIKE %s
@@ -207,7 +207,7 @@ class DBLayer:
             clauses = " OR ".join("cp3.cfrPart = %s" for _ in cfr_patterns)
             sql += (
                 " AND EXISTS ("
-                "SELECT 1 FROM documents d3 "
+                "SELECT 1 FROM documentsWithFRdoc d3 "
                 "JOIN cfrparts cp3 ON cp3.frdocnum = d3.frdocnum "
                 "WHERE d3.docket_id = d.docket_id "
                 f"AND ({clauses})"
@@ -222,7 +222,7 @@ class DBLayer:
             )
             sql += (
                 " AND EXISTS ("
-                "SELECT 1 FROM documents d2 "
+                "SELECT 1 FROM documentsWithFRdoc d2 "
                 "JOIN cfrparts cp2 ON cp2.frdocnum = d2.frdocnum "
                 "WHERE d2.docket_id = d.docket_id "
                 f"AND ({exact_clauses})"
@@ -278,7 +278,7 @@ class DBLayer:
                 cp.cfrPart,
                 l.link
             FROM dockets d
-            JOIN documents doc ON doc.docket_id = d.docket_id
+            JOIN documentsWithFRdoc doc ON doc.docket_id = d.docket_id
             LEFT JOIN cfrparts cp ON cp.frdocnum = doc.frdocnum
             LEFT JOIN links l ON l.title = cp.title AND l.cfrPart = cp.cfrPart
             WHERE d.docket_id = ANY(%s)
